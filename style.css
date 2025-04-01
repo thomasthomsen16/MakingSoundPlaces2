@@ -1,0 +1,88 @@
+body {
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.Title {
+    font-size: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+button {
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    font-size: 16px;
+    color: black;
+    background-color: white;
+}
+
+.btn-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+button:hover {
+    color: white;
+    background-color: black;
+}
+
+/* Centering only the buttons & title */
+.centered-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+}
+
+img {
+    width: 300px;
+    height: auto;  /* Keeps the aspect ratio */
+}
+ 
+img.img1 {
+    position: absolute;
+    top: 5%;
+    left: 25%;
+}
+
+img.img2 {
+    position: absolute;
+    top: 15%;
+    right: 25%;
+}
+
+img.img3 {
+    position: absolute;
+    top: 0%;
+    left: 15%;
+}
+
+img.img4 {
+    position: absolute;
+    bottom: 0%;
+    left: 20%;
+}
+
+img.img5 {
+    position: absolute;
+    top: 0%;
+    right: 15%;
+}
+
+img.img6 {
+    position: absolute;
+    bottom: 5%;
+    left: 10%;
+}
+
+img.img7 {
+    position: absolute;
+    bottom: 5%;
+    right: 20%;
+}
