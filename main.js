@@ -4,9 +4,28 @@ let gainNode; // Declare gain node to control volume
 let pannerNode1, pannerNode2; // Declare panner nodes for stereo panning and each oscillator
 let env1, env2; // Declare envelope nodes for each oscillator
 let currentGain; // Declare a variable to store the current gain value
+let currentGainBuffer;// Declare a variable to store the current gain value for the audio buffer
 const aMinorPentatonic = [440, 523.25, 587.33, 659.25, 783.99, 880]; // A minor pentatonic scale specified in Hz
+let audioBuffer; // Declare audio buffer for loading sound files
+let audioBufferGainNode; // Declare gain node for audio buffer
+let source; // Declare source node for audio buffer  
 
+// Async function to load audio data from a URL and decode it
+async function loadAudio(url) {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    return await audioCtx.decodeAudioData(arrayBuffer);
+  }
 
+  // Function to play the loaded audio buffer
+  function playAudio(playBuffer) {
+    const source = audioCtx.createBufferSource();
+    source.buffer = playBuffer;
+    source.start();
+    return source;
+  }
+  
+  
 // Function to create an oscillator with a given frequency
 function createOscillator(frequency) {
     const osc = audioCtx.createOscillator();
@@ -34,24 +53,46 @@ function applyEnvelope(env, attack, decay, sustain, release, duration) {
 }
 
 // Start audio a context when the user clicks the start button
-document.getElementById("startButton").addEventListener("click", () => {
+document.getElementById("startButton").addEventListener("click", async () => {
     if (!audioCtx) {
         audioCtx = new AudioContext();
+        audioBuffer = await loadAudio('./Assets/Audio/City-soundscape.wav'); // Load your sound file
     }
-   
-});
 
+    source = playAudio(audioBuffer); // Store the returned source in a global variable
+    audioBufferGainNode = audioCtx.createGain();
+    audioBufferGainNode.gain.setValueAtTime(1, audioCtx.currentTime); // Set initial volume
+    source.connect(audioBufferGainNode);  // Connect source to the gain node
+    audioBufferGainNode.connect(audioCtx.destination); // Connect to audio context destination
+    document.getElementById("stopButton").disabled = false; // Enable stop button
+    document.getElementById("startButton").disabled = true; // Disable start button
+});
 // Smooth fade-out when stopping using the stop button
 document.getElementById("stopButton").addEventListener("click", () => {
-    if (osc1 && ocs2 && gainNode) {
+    if (source) {  // Check if the audio buffer source exists
         const fadeTime = 1; // Duration of fade-out in seconds
-        currentGain = gainNode.gain.value; // Capture current volume
+        currentGainBuffer = audioBufferGainNode.gain.value; // Capture current volume for audio buffer
 
-        // Start fade-out smoothly from the current gain value
+        // Start fade-out smoothly from the current gain value for the audio buffer
+        audioBufferGainNode.gain.setValueAtTime(currentGainBuffer, audioCtx.currentTime); // Avoid sudden jumps
+        audioBufferGainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeTime);
+
+        // Stop the audio source after fade-out completes
+        setTimeout(() => {
+            source.stop(); // Stop the audio buffer source
+            source = null; // Clear reference to source
+        }, fadeTime * 1000);
+    }
+
+    if (osc1 && osc2 && gainNode) {  // Check if the oscillators exist
+        const fadeTime = 1; // Duration of fade-out in seconds
+        currentGain = gainNode.gain.value; // Capture current volume of oscillators
+
+        // Start fade-out smoothly from the current gain value for the oscillators
         gainNode.gain.setValueAtTime(currentGain, audioCtx.currentTime); // Avoid sudden jumps
         gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + fadeTime);
 
-        // Stop oscillator after fade-out completes
+        // Stop oscillators after fade-out completes
         setTimeout(() => {
             osc1.stop();
             osc1 = null; // Clear reference
@@ -59,7 +100,10 @@ document.getElementById("stopButton").addEventListener("click", () => {
             osc2 = null; // Clear reference
         }, fadeTime * 1000);
     }
+    document.getElementById("stopButton").disabled = true; // Disable stop button
+    document.getElementById("startButton").disabled = false; // Enable start button
 });
+
 
 const images = document.querySelectorAll("img");
 
