@@ -8,7 +8,9 @@ let currentGainBuffer;// Declare a variable to store the current gain value for 
 const aMinorPentatonic = [440, 523.25, 587.33, 659.25, 783.99, 880]; // A minor pentatonic scale specified in Hz
 let audioBuffer; // Declare audio buffer for loading sound files
 let audioBufferGainNode; // Declare gain node for audio buffer
-let source; // Declare source node for audio buffer  
+let source; // Declare source node for audio buffer
+let isPlaying = false;
+
 
 // Async function to load audio data from a URL and decode it
 async function loadAudio(url) {
@@ -64,11 +66,17 @@ document.getElementById("startButton").addEventListener("click", async () => {
     audioBufferGainNode.gain.setValueAtTime(1, audioCtx.currentTime); // Set initial volume
     source.connect(audioBufferGainNode);  // Connect source to the gain node
     audioBufferGainNode.connect(audioCtx.destination); // Connect to audio context destination
+
+    isPlaying = true; // Allow new oscillators to be started
+
     document.getElementById("stopButton").disabled = false; // Enable stop button
     document.getElementById("startButton").disabled = true; // Disable start button
 });
 // Smooth fade-out when stopping using the stop button
 document.getElementById("stopButton").addEventListener("click", () => {
+
+    isPlaying = false; // Prevent new oscillators from starting
+
     if (source) {  // Check if the audio buffer source exists
         const fadeTime = 1; // Duration of fade-out in seconds
         currentGainBuffer = audioBufferGainNode.gain.value; // Capture current volume for audio buffer
@@ -109,6 +117,8 @@ const images = document.querySelectorAll("img");
 
 images.forEach(img => {
     img.addEventListener("mouseenter", () => {
+
+    if (!isPlaying) return; // Prevent starting oscillators if audio context is not active
 
     let randomNote = aMinorPentatonic[Math.floor(Math.random() * aMinorPentatonic.length)];
     let randomBeating = Math.floor(Math.random() * 10) + 5;
